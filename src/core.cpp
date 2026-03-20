@@ -16,17 +16,13 @@ export namespace umkacxx
     template <typename T> class umka_dynarray
     {
         public:
-            std::shared_ptr<Umka> vm;
-            const UmkaType *type;
-            int64_t itemsize;
+            vm_handle vm;
             T *data;
             int length;
-
-            umka_dynarray(const umka_dynarray_raw<T> &raw, std::shared_ptr<Umka> vm)
-                : vm{vm}, type{raw.type}, itemsize{raw.itemsize}, data{raw.data}, length{umkaGetDynArrayLen(&raw)}
+            umka_dynarray(const umka_dynarray_raw<T> &raw, vm_handle vm)
+                : vm{vm}, data{raw.data}, length{umkaGetDynArrayLen(&raw)}
             {
             }
-
             ~umka_dynarray()
             {
                 umkaDecRef(vm.get(), data);
