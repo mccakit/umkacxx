@@ -27,8 +27,8 @@ type basic_struct = struct {
     age: int
 }
 
-fn get_basic_struct(): my_struct {
-    return my_struct{name: "Umka", age: 42}
+fn get_basic_struct(): basic_struct {
+    return basic_struct{name: "Umka", age: 42}
 }
 
 type complex_struct = struct {
