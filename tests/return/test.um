@@ -1,0 +1,58 @@
+fn get_str(): str {
+    return "Hello, World!"
+}
+
+fn get_int(): int {
+    return 42
+}
+
+fn get_real(): real {
+    return 3.14
+}
+
+fn get_bool(): bool {
+    return true
+}
+
+fn get_int_arr(): []int {
+    return []int{1, 2, 3, 4, 5}
+}
+
+fn get_str_arr(): []str {
+    return []str{"Hello", "World", "Umka"}
+}
+
+type basic_struct = struct {
+    name: str
+    age: int
+}
+
+fn get_basic_struct(): my_struct {
+    return my_struct{name: "Umka", age: 42}
+}
+
+type complex_struct = struct {
+    name: str
+    tags: []str
+    values: []int
+}
+
+fn get_complex_struct(): complex_struct {
+    return complex_struct{
+        name: "Umka",
+        tags: []str{"foo", "bar", "baz"},
+        values: []int{1, 2, 3, 4, 5}
+    }
+}
+
+type inner_struct = struct {
+    name: str
+    values: []int
+}
+
+fn get_nested(): []inner_struct {
+    return []inner_struct{
+        inner_struct{name: "foo", values: []int{1, 2, 3}},
+        inner_struct{name: "bar", values: []int{4, 5, 6}}
+    }
+}

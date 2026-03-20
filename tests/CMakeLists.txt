@@ -1,0 +1,5 @@
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(UT REQUIRED IMPORTED_TARGET boost_ut)
+add_executable(test0)
+target_sources(test0 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/return/test.cpp)
+target_link_libraries(test0 PRIVATE umkacxx PkgConfig::UT)
