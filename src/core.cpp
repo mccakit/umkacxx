@@ -7,83 +7,57 @@ export namespace umkacxx
     /// Shared ownership handle to the Umka VM.
     using vm_handle = std::shared_ptr<Umka>;
 
-    /// Mirrors Umka's internal dynamic array layout. Use as raw type in `umka::call`.
-    template <typename T> struct umka_dynarray_raw
+    /// Decrements the reference count of an Umka-managed heap pointer.
+    /// Call this on the `.data` pointer of any `umka_dynarray` you received
+    /// directly from the VM after you are done copying its contents.
+    /// Do NOT call this on nested arrays inside an outer array — Umka frees
+    /// those automatically when the outer array is decreffed.
+    auto umka_decref(const vm_handle vm, void *ptr) -> void
+    {
+        umkaDecRef(vm.get(), ptr);
+    }
+
+    /// Mirrors Umka's internal dynamic array layout.
+    /// T must match the element type of the corresponding Umka []T slice.
+    /// Use `.len()` to get the number of elements and `.data` to iterate.
+    template <typename T> struct umka_dynarray
     {
         public:
             const UmkaType *type;
             int64_t itemsize;
             T *data;
-    };
 
-    /// Owning C++ wrapper for a Umka dynamic array. Copies data out of Umka's GC heap on construction.
-    template <typename T> class umka_dynarray
-    {
-        public:
-            vm_handle vm;
-            std::vector<T> data;
-
-            /// Copies elements from a same-type raw array and decrefs the raw pointer.
-            umka_dynarray(const umka_dynarray_raw<T> &raw, vm_handle vm) : vm{vm}
+            auto len() -> const int64_t
             {
-                int len = umkaGetDynArrayLen(&raw);
-                data.reserve(len);
-                for (int i = 0; i < len; i++)
-                {
-                    data.push_back(raw.data[i]);
-                }
-                umkaDecRef(vm.get(), raw.data);
-            }
-
-            /// Converts elements from a different raw type via `T(raw_elem, vm)`.
-            template <typename RawT> umka_dynarray(const umka_dynarray_raw<RawT> &raw, vm_handle vm) : vm{vm}
-            {
-                int len = umkaGetDynArrayLen(&raw);
-                data.reserve(len);
-                for (int i = 0; i < len; i++)
-                {
-                    data.emplace_back(raw.data[i], vm);
-                }
+                return umkaGetDynArrayLen(this);
             }
     };
-
-    /// Umka source module. `src` must be null-terminated.
-    /// @tparam N Deduced from the `std::array` size via CTAD.
-    template <std::size_t N> struct umka_module
-    {
-        public:
-            std::string name{};
-            std::array<char, N> src{};
-    };
-
-    template <std::size_t N> umka_module(std::string, std::array<char, N>) -> umka_module<N>;
 
     /// Manages an Umka VM and provides a typed function call interface.
+    ///
+    /// ## Calling Umka functions
+    /// Use `call<T, U>(name)` where:
+    ///   - T is the raw Umka-side return type (must match Umka's memory layout)
+    ///   - U is the C++ wrapper type to construct from the result
+    ///
+    /// U must be constructible as:
+    ///   - U{vm_handle, T}  for struct/dynarray returns
+    ///   - U{T}             for arithmetic/pointer returns
+    ///
+    /// ## Memory management
+    /// Umka heap objects (dynamic arrays) are reference counted.
+    /// When your U constructor receives a `umka_dynarray<T>`, copy its
+    /// contents into stdlib types and call `umka_decref(vm, arr.data)` on
+    /// the array's `.data` pointer. Only decref arrays you received directly
+    /// from the VM — nested arrays inside a struct are freed by Umka when
+    /// the outer array is decreffed.
     class umka
     {
         public:
             std::shared_ptr<Umka> umka_vm;
 
-            /// Constructs the VM, registers modules, compiles and runs the main script.
-            template <std::size_t... Ns>
-            umka(const std::filesystem::path &main_script, umka_module<Ns> &&...modules)
-                : umka_vm{umkaAlloc(), umkaFree}
-            {
-                umkaInit(umka_vm.get(), main_script.c_str(), nullptr, 4096, nullptr, 0, nullptr, true, true, nullptr);
-                (umkaAddModule(umka_vm.get(), modules.name.c_str(), modules.src.data()), ...);
-                if (!umkaCompile(umka_vm.get()))
-                {
-                    std::println("umkacxx compile error: {}", umkaGetError(umka_vm.get())->msg);
-                    std::terminate();
-                }
-                if (umkaRun(umka_vm.get()) != 0)
-                {
-                    std::println("umkacxx runtime error: {}", umkaGetError(umka_vm.get())->msg);
-                    std::terminate();
-                }
-            }
-
-            /// Constructs the VM with no additional modules.
+            /// Constructs and runs the VM from the given Umka script path.
+            /// Terminates on compile or runtime error.
             umka(const std::filesystem::path &main_script) : umka_vm{umkaAlloc(), umkaFree}
             {
                 umkaInit(umka_vm.get(), main_script.c_str(), nullptr, 4096, nullptr, 0, nullptr, true, true, nullptr);
@@ -99,12 +73,6 @@ export namespace umkacxx
                 }
             }
 
-            /// `umkaFree` called automatically via shared_ptr deleter.
-            ~umka() = default;
-
-            /// Calls an Umka function.
-            /// @tparam T Raw return type — scalar or struct mirroring Umka's memory layout.
-            /// @tparam U Result type — constructed as `U{raw, vm}` for structs, `U{value}` for scalars.
             template <typename T, typename U> auto call(std::string_view func_name) -> U
             {
                 UmkaFuncContext fn{};
@@ -133,7 +101,7 @@ export namespace umkacxx
                     UmkaStackSlot result_slot{.ptrVal = &result_storage};
                     fn.result = &result_slot;
                     umkaCall(umka_vm.get(), &fn);
-                    return U{*static_cast<T *>(result_slot.ptrVal), umka_vm};
+                    return U{umka_vm, *static_cast<T *>(result_slot.ptrVal)};
                 }
             }
     };
