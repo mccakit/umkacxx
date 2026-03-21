@@ -8,22 +8,22 @@ int main()
     umkacxx::umka vm{"./test.um"};
 
     "str return"_test = [&vm] {
-        auto msg = vm.call<const char *>("get_str");
-        expect(std::string_view{msg} == std::string_view{"Hello, World!"});
+        auto msg = vm.call<const char *, std::string>("get_str");
+        expect(msg == "Hello, World!");
     };
 
     "int return"_test = [&vm] {
-        auto val = vm.call<std::int64_t>("get_int");
+        auto val = vm.call<std::int64_t, int>("get_int");
         expect(val == 42_i);
     };
 
     "real return"_test = [&vm] {
-        auto val = vm.call<double>("get_real");
+        auto val = vm.call<double, double>("get_real");
         expect(val == 3.14_d);
     };
 
     "bool return"_test = [&vm] {
-        auto val = vm.call<bool>("get_bool");
+        auto val = vm.call<bool, bool>("get_bool");
         expect(val == true);
     };
 
@@ -54,7 +54,6 @@ int main()
         public:
             const char *name;
             std::int64_t age;
-
     };
 
     struct basic_struct
@@ -64,7 +63,8 @@ int main()
             std::string name{};
             std::int64_t age{};
             basic_struct() = default;
-            basic_struct(const basic_struct_raw &other, umkacxx::vm_handle vm) : vm{vm}, name{other.name}, age{other.age}
+            basic_struct(const basic_struct_raw &other, umkacxx::vm_handle vm)
+                : vm{vm}, name{other.name}, age{other.age}
             {
             }
     };
@@ -77,6 +77,7 @@ int main()
 
     struct complex_struct_raw
     {
+        public:
             const char *name;
             umkacxx::umka_dynarray_raw<const char *> tags;
             umkacxx::umka_dynarray_raw<std::int64_t> values;
@@ -84,7 +85,8 @@ int main()
 
     struct complex_struct
     {
-            const char *name;
+        public:
+            std::string name{};
             umkacxx::umka_dynarray<const char *> tags;
             umkacxx::umka_dynarray<std::int64_t> values;
 
@@ -109,18 +111,29 @@ int main()
         expect(s.values.data[4] == 5_i);
     };
 
-    struct inner_struct
+    struct inner_struct_raw
     {
+        public:
             const char *name;
             umkacxx::umka_dynarray_raw<std::int64_t> values;
     };
 
+    struct inner_struct
+    {
+            std::string name{};
+            umkacxx::umka_dynarray<std::int64_t> values;
+
+            inner_struct(const inner_struct_raw &raw, umkacxx::vm_handle vm) : name{raw.name}, values{raw.values, vm}
+            {
+            }
+    };
+
     "nested arr return"_test = [&vm] {
-        using raw_t = umkacxx::umka_dynarray_raw<inner_struct>;
+        using raw_t = umkacxx::umka_dynarray_raw<inner_struct_raw>;
         using raii_t = umkacxx::umka_dynarray<inner_struct>;
         auto arr = vm.call<raw_t, raii_t>("get_nested");
         expect(arr.data.size() == 2);
         expect(std::string_view{arr.data[0].name} == std::string_view{"foo"});
-        expect(arr.data[1].name == std::string_view{"bar"});
+        expect(std::string_view{arr.data[1].name} == std::string_view{"bar"});
     };
 }
