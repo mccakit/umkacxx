@@ -36,31 +36,9 @@ export namespace umkacxx
             std::string name{};
             std::array<char, N> src{};
     };
-
     /// @brief CTAD deduction guide for umka_module.
     /// @note Deduces `N` from the size of the provided `std::array`.
     template <std::size_t N> umka_module(std::string, std::array<char, N>) -> umka_module<N>;
-
-    template <typename T> constexpr auto get_slot_value(const UmkaStackSlot &slot) -> T
-    {
-        if constexpr (std::is_pointer_v<T>)
-        {
-            return reinterpret_cast<T>(slot.ptrVal);
-        }
-        else if constexpr (std::is_floating_point_v<T>)
-        {
-            return static_cast<T>(slot.realVal);
-        }
-        else
-        {
-            return static_cast<T>(slot.intVal);
-        }
-    }
-
-    template <typename T>
-    concept umka_scalar = std::is_arithmetic_v<T> || std::is_pointer_v<T>;
-    template <typename T>
-    concept umka_struct = std::is_trivially_copyable_v<T> && !umka_scalar<T>;
 
     class umka
     {
@@ -100,21 +78,32 @@ export namespace umkacxx
                 }
             }
 
+            //Return is scalar
             template <typename T>
-                requires umka_scalar<T>
-            auto call(std::string_view func_name) -> T
+            auto call_scalar(std::string_view func_name) -> T
             {
                 UmkaFuncContext fn{};
                 umkaGetFunc(umka_vm.get(), nullptr, func_name.data(), &fn);
                 UmkaStackSlot result_slot{};
                 fn.result = &result_slot;
                 umkaCall(umka_vm.get(), &fn);
-                return get_slot_value<T>(result_slot);
+                if constexpr (std::is_pointer_v<T>)
+                {
+                    return reinterpret_cast<T>(result_slot.ptrVal);
+                }
+                else if constexpr (std::is_floating_point_v<T>)
+                {
+                    return static_cast<T>(result_slot.realVal);
+                }
+                else
+                {
+                    return static_cast<T>(result_slot.intVal);
+                }
             }
 
+            //Return type is a struct with scalar fields
             template <typename T>
-                requires umka_struct<T>
-            auto call(std::string_view func_name) -> T
+            auto call_struct(std::string_view func_name) -> T
             {
                 UmkaFuncContext fn{};
                 umkaGetFunc(umka_vm.get(), nullptr, func_name.data(), &fn);
@@ -125,15 +114,29 @@ export namespace umkacxx
                 return *static_cast<T *>(result_slot.ptrVal);
             }
 
-            template <typename rawtype, typename raiitype> auto call(std::string_view func_name) -> raiitype
+            //Return type is a struct with arr fields
+            template <typename T, typename U>
+            auto call_struct(std::string_view func_name) -> U
             {
                 UmkaFuncContext fn{};
                 umkaGetFunc(umka_vm.get(), nullptr, func_name.data(), &fn);
-                rawtype result_storage{};
+                T result_storage{};
                 UmkaStackSlot result_slot{.ptrVal = &result_storage};
                 fn.result = &result_slot;
                 umkaCall(umka_vm.get(), &fn);
-                return raiitype{*static_cast<rawtype *>(result_slot.ptrVal), umka_vm};
+                return U{*static_cast<T *>(result_slot.ptrVal), umka_vm};
+            }
+
+            //Return type is an array
+            template <typename T> auto call_arr(std::string_view func_name) -> umka_dynarray<T>
+            {
+                UmkaFuncContext fn{};
+                umkaGetFunc(umka_vm.get(), nullptr, func_name.data(), &fn);
+                umka_dynarray_raw<T> result_storage{};
+                UmkaStackSlot result_slot{.ptrVal = &result_storage};
+                fn.result = &result_slot;
+                umkaCall(umka_vm.get(), &fn);
+                return umka_dynarray<T>{*static_cast<umka_dynarray_raw<T> *>(result_slot.ptrVal), umka_vm};
             }
     };
 } // namespace umkacxx
