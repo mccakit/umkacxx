@@ -8,3 +8,4 @@ add_custom_command(TARGET return_test POST_BUILD
         ${CMAKE_CURRENT_SOURCE_DIR}/return/test.um
         $<TARGET_FILE_DIR:return_test>/test.um
 )
+add_test(NAME return_test COMMAND return_test)

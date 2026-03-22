@@ -5,46 +5,45 @@ import boost.ut;
 int main()
 {
     using namespace boost::ut;
-    umkacxx::umka vm{"./test.um"};
+    umkacxx::umka umka{"./test.um"};
 
-    "str return"_test = [&vm] {
-        auto msg = vm.call<const char *, std::string>("get_str");
+    "str return"_test = [&umka] {
+        std::string msg{umka.call<umkacxx::types::str_t>("get_str")};
         expect(msg == "Hello, World!");
     };
 
-    "int return"_test = [&vm] {
-        auto val = vm.call<std::int64_t, int>("get_int");
+    "int return"_test = [&umka] {
+        int val{static_cast<int>(umka.call<umkacxx::types::int_t>("get_int"))};
         expect(val == 42_i);
     };
 
-    "real return"_test = [&vm] {
-        auto val = vm.call<double, double>("get_real");
+    "real return"_test = [&umka] {
+        double val{static_cast<double>(umka.call<umkacxx::types::real_t>("get_real"))};
         expect(val == 3.14_d);
     };
 
-    "bool return"_test = [&vm] {
-        auto val = vm.call<bool, bool>("get_bool");
+    "bool return"_test = [&umka] {
+        bool val{static_cast<bool>(umka.call<umkacxx::types::bool_t>("get_bool"))};
         expect(val == true);
     };
 
-    struct umka_int_arr
+    struct umka_intarr_cxx
     {
         public:
-            umkacxx::vm_handle vm;
             std::vector<int> data;
-            umka_int_arr(umkacxx::vm_handle vm, umkacxx::umka_dynarray<std::int64_t> arr) : vm{vm}
+            umka_intarr_cxx(umkacxx::types::vm_handle handle, umkacxx::types::arr_t<umkacxx::types::int_t> arr)
             {
                 data.resize(arr.len());
                 for (int i = 0; i < arr.len(); ++i)
                 {
                     data[i] = static_cast<int>(arr.data[i]);
                 }
-                umkacxx::umka_decref(vm, arr.data);
+                arr.decref(handle);
             }
     };
 
-    "int arr return"_test = [&vm] {
-        auto int_arr = vm.call<umkacxx::umka_dynarray<std::int64_t>, umka_int_arr>("get_int_arr");
+    "int arr return"_test = [&umka] {
+        umka_intarr_cxx int_arr{umka.vm, umka.call<umkacxx::types::arr_t<umkacxx::types::int_t>>("get_int_arr")};
         expect(int_arr.data.size() == 5);
         expect(int_arr.data[0] == 1_i);
         expect(int_arr.data[1] == 2_i);
@@ -53,150 +52,140 @@ int main()
         expect(int_arr.data[4] == 5_i);
     };
 
-    struct umka_str_arr
+    struct umka_strarr_cxx
     {
         public:
-            umkacxx::vm_handle vm;
-            std::vector<const char *> data;
-            umka_str_arr(umkacxx::vm_handle vm, umkacxx::umka_dynarray<const char *> arr) : vm{vm}
+            std::vector<std::string> data;
+            umka_strarr_cxx(umkacxx::types::vm_handle vm, umkacxx::types::arr_t<umkacxx::types::str_t> arr)
             {
                 data.resize(arr.len());
                 for (int i = 0; i < arr.len(); ++i)
                 {
                     data[i] = arr.data[i];
                 }
-                umkacxx::umka_decref(vm, arr.data);
+                arr.decref(vm);
             }
     };
 
-    "str arr return"_test = [&vm] {
-        auto arr = vm.call<umkacxx::umka_dynarray<const char *>, umka_str_arr>("get_str_arr");
+    "str arr return"_test = [&umka] {
+        umka_strarr_cxx arr{umka.vm, umka.call<umkacxx::types::arr_t<umkacxx::types::str_t>>("get_str_arr")};
         expect(arr.data.size() == 3);
-        expect(std::string_view{arr.data[0]} == std::string_view{"Hello"});
-        expect(std::string_view{arr.data[1]} == std::string_view{"World"});
-        expect(std::string_view{arr.data[2]} == std::string_view{"Umka"});
+        expect(std::string_view{arr.data[0]} == "Hello");
+        expect(std::string_view{arr.data[1]} == "World");
+        expect(std::string_view{arr.data[2]} == "Umka");
     };
 
-    struct basic_struct_raw
+    struct basic_struct_umka
     {
         public:
-            const char *name;
-            std::int64_t age;
+            umkacxx::types::str_t name;
+            umkacxx::types::int_t age;
     };
 
-    struct basic_struct
+    struct basic_struct_cxx
     {
         public:
-            umkacxx::vm_handle vm;
-            std::string name;
-            std::int64_t age;
-            basic_struct(umkacxx::vm_handle vm, basic_struct_raw raw) : vm{vm}, name{raw.name}, age{raw.age}
+            std::string name{};
+            int age{};
+            basic_struct_cxx(basic_struct_umka raw) : name{raw.name}, age{static_cast<int>(raw.age)}
             {
             }
     };
 
-    "basic struct return"_test = [&vm] {
-        auto s = vm.call<basic_struct_raw, basic_struct>("get_basic_struct");
-        expect(std::string_view{s.name} == std::string_view{"Umka"});
-        expect(s.age == 42_i);
+    "basic struct return"_test = [&umka] {
+        basic_struct_cxx basic_struct{umka.call<basic_struct_umka>("get_basic_struct")};
+        expect(basic_struct.name == "Umka");
+        expect(basic_struct.age == 42_i);
     };
 
-    struct complex_struct_raw
+    struct complex_struct_umka
     {
         public:
-            const char *name;
-            umkacxx::umka_dynarray<const char *> tags;
-            umkacxx::umka_dynarray<std::int64_t> values;
+            umkacxx::types::str_t name;
+            umkacxx::types::arr_t<umkacxx::types::str_t> tags;
+            umkacxx::types::arr_t<umkacxx::types::int_t> values;
     };
 
-    struct complex_struct
+    struct complex_struct_cxx
     {
         public:
-            umkacxx::vm_handle vm;
-            std::string name;
-            std::vector<const char *> tags;
-            std::vector<std::int64_t> values;
-            complex_struct(umkacxx::vm_handle vm, complex_struct_raw raw) : vm{vm}, name{raw.name}
+            std::string name{};
+            std::vector<std::string> tags{};
+            std::vector<int> values{};
+            complex_struct_cxx(umkacxx::types::vm_handle vm, complex_struct_umka umka_struct) : name{umka_struct.name}
             {
-                tags.resize(raw.tags.len());
-                for (int i = 0; i < raw.tags.len(); ++i)
+                tags.resize(umka_struct.tags.len());
+                for (int i = 0; i < umka_struct.tags.len(); ++i)
                 {
-                    tags[i] = raw.tags.data[i];
+                    tags[i] = umka_struct.tags.data[i];
                 }
-                umkacxx::umka_decref(vm, raw.tags.data);
-
-                values.resize(raw.values.len());
-                for (int i = 0; i < raw.values.len(); ++i)
+                values.resize(umka_struct.values.len());
+                for (int i = 0; i < umka_struct.values.len(); ++i)
                 {
-                    values[i] = raw.values.data[i];
+                    values[i] = umka_struct.values.data[i];
                 }
-                umkacxx::umka_decref(vm, raw.values.data);
+                umka_struct.tags.decref(vm);
+                umka_struct.values.decref(vm);
             }
     };
 
-    "complex struct return"_test = [&vm] {
-        auto s = vm.call<complex_struct_raw, complex_struct>("get_complex_struct");
-        expect(std::string_view{s.name} == std::string_view{"Umka"});
-        expect(s.tags.size() == 3);
-        expect(std::string_view{s.tags[0]} == std::string_view{"foo"});
-        expect(std::string_view{s.tags[1]} == std::string_view{"bar"});
-        expect(std::string_view{s.tags[2]} == std::string_view{"baz"});
-        expect(s.values.size() == 5);
-        expect(s.values[0] == 1_i);
-        expect(s.values[1] == 2_i);
-        expect(s.values[2] == 3_i);
-        expect(s.values[3] == 4_i);
-        expect(s.values[4] == 5_i);
+    "complex struct return"_test = [&umka] {
+        complex_struct_cxx complex_struct{umka.vm, umka.call<complex_struct_umka>("get_complex_struct")};
+        expect(complex_struct.name == "Umka");
+        expect(complex_struct.tags.size() == 3);
+        expect(complex_struct.tags[0] == "foo");
+        expect(complex_struct.tags[1] == "bar");
+        expect(complex_struct.tags[2] == "baz");
+        expect(complex_struct.values.size() == 5);
+        expect(complex_struct.values[0] == 1_i);
+        expect(complex_struct.values[1] == 2_i);
+        expect(complex_struct.values[2] == 3_i);
+        expect(complex_struct.values[3] == 4_i);
+        expect(complex_struct.values[4] == 5_i);
     };
 
-    struct inner_raw
+    struct inner_umka
     {
         public:
-            const char *name;
-            umkacxx::umka_dynarray<std::int64_t> values;
+            umkacxx::types::str_t name;
+            umkacxx::types::arr_t<umkacxx::types::int_t> values;
     };
 
-    struct inner
+    struct inner_cxx
     {
         public:
-            std::string name;
-            std::vector<std::int64_t> values;
+            std::string name{};
+            std::vector<int> values{};
     };
 
-    struct nested_arr_raw
+    struct nested_arr_umka
     {
         public:
-            umkacxx::umka_dynarray<inner_raw> data;
+            umkacxx::types::arr_t<inner_umka> data;
     };
 
-    struct nested_arr
+    struct nested_arr_cxx
     {
         public:
-            umkacxx::vm_handle vm;
-            std::vector<inner> data;
-            nested_arr(umkacxx::vm_handle vm, nested_arr_raw raw) : vm{vm}
+            std::vector<inner_cxx> data;
+            nested_arr_cxx(umkacxx::types::vm_handle vm, nested_arr_umka raw)
             {
-                data.resize(raw.data.len());
-                for (int i = 0; i < raw.data.len(); ++i)
+                auto len = raw.data.len();
+                data.reserve(len);
+                for (int i = 0; i < len; ++i)
                 {
                     auto &src = raw.data.data[i];
-                    inner dst;
-                    dst.name = src.name;
-                    dst.values.resize(src.values.len());
-                    for (int j = 0; j < src.values.len(); ++j)
-                    {
-                        dst.values[j] = src.values.data[j];
-                    }
-                    data[i] = std::move(dst);
+                    data.push_back({.name = src.name,
+                                    .values = std::vector<int>(src.values.data, src.values.data + src.values.len())});
                 }
-                umkacxx::umka_decref(vm, raw.data.data);
+                raw.data.decref(vm);
             }
     };
 
-    "nested arr return"_test = [&vm] {
-        auto arr = vm.call<nested_arr_raw, nested_arr>("get_nested");
+    "nested arr return"_test = [&umka] {
+        nested_arr_cxx arr{umka.vm, umka.call<nested_arr_umka>("get_nested")};
         expect(arr.data.size() == 2);
-        expect(std::string_view{arr.data[0].name} == std::string_view{"foo"});
-        expect(std::string_view{arr.data[1].name} == std::string_view{"bar"});
+        expect(arr.data[0].name == "foo");
+        expect(arr.data[1].name == "bar");
     };
 }
