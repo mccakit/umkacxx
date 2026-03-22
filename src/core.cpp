@@ -5,6 +5,37 @@ import std;
 import :types;
 export namespace umkacxx
 {
+    template <typename T> auto get_param(types::umka_slot *params, int index) -> T
+    {
+        auto *slot = umkaGetParam(params, index);
+        if constexpr (std::is_pointer_v<T>)
+        {
+            return static_cast<T>(slot->ptrVal);
+        }
+        else if constexpr (std::is_floating_point_v<T>)
+        {
+            return static_cast<T>(slot->realVal);
+        }
+        else
+        {
+            return static_cast<T>(slot->intVal);
+        }
+    }
+    template <typename T> auto set_result(types::umka_slot *result, T val) -> void
+    {
+        if constexpr (std::is_pointer_v<T>)
+        {
+            result->ptrVal = static_cast<void *>(val);
+        }
+        else if constexpr (std::is_floating_point_v<T>)
+        {
+            result->realVal = static_cast<double>(val);
+        }
+        else
+        {
+            result->intVal = static_cast<int64_t>(val);
+        }
+    }
     /// Manages an Umka VM and provides a typed function call interface.
     ///
     /// ## Calling Umka functions
@@ -30,9 +61,16 @@ export namespace umkacxx
 
             /// Constructs and runs the VM from the given Umka script path.
             /// Terminates on compile or runtime error.
-            umka(const std::filesystem::path &main_script) : vm{umkaAlloc(), umkaFree}
+            umka(const std::filesystem::path &main_script, std::initializer_list<types::module_t> modules = {})
+                : vm{umkaAlloc(), umkaFree}
             {
                 umkaInit(vm.get(), main_script.c_str(), nullptr, 4096, nullptr, 0, nullptr, true, true, nullptr);
+                for (auto &mod : modules)
+                {
+                    for (auto &fn : mod.funcs)
+                        umkaAddFunc(vm.get(), fn.name.c_str(), fn.fn);
+                    umkaAddModule(vm.get(), mod.name.c_str(), mod.src.c_str());
+                }
                 if (!umkaCompile(vm.get()))
                 {
                     std::println("umkacxx compile error: {}", umkaGetError(vm.get())->msg);
@@ -44,7 +82,6 @@ export namespace umkacxx
                     std::terminate();
                 }
             }
-
             template <typename T> auto call(std::string_view func_name) -> T
             {
                 UmkaFuncContext fn{};

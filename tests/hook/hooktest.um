@@ -1,0 +1,7 @@
+import "cppfuncs.um"
+
+fn main() {}
+
+fn run(): int {
+    return cppfuncs::add(1, 2)
+}

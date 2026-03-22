@@ -33,9 +33,33 @@ export namespace umkacxx::types
             }
     };
 
+    /// Mirrors Umka types.
     using str_t = const char *;
     using int_t = std::int64_t;
     using uint_t = std::uint64_t;
     using real_t = double;
     using bool_t = bool;
-}
+
+    /// Mirrors Umka's internal stack slot layout.
+    using umka_slot = UmkaStackSlot;
+    using umka_efunc = UmkaExternFunc;
+    struct func_t
+    {
+        public:
+            std::string name;
+            UmkaExternFunc fn;
+    };
+
+    class module_t
+    {
+        public:
+            std::string name{};
+            std::string src{};
+            std::vector<func_t> funcs{};
+
+            module_t(std::string_view name, std::string_view src, std::vector<func_t> funcs = {})
+                : name{name}, src{src}, funcs{std::move(funcs)}
+            {
+            }
+    };
+} // namespace umkacxx::types
