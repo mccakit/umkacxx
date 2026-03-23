@@ -84,7 +84,7 @@ export namespace umkacxx
                     std::terminate();
                 }
             }
-            template <typename T> auto call(std::string_view func_name) -> T
+            template <typename T> auto call(std::string_view func_name) const -> T
             {
                 UmkaFuncContext fn{};
                 umkaGetFunc(vm.get(), nullptr, func_name.data(), &fn);
