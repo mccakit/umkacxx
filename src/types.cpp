@@ -17,7 +17,7 @@ export namespace umkacxx::types
             int64_t itemsize;
             T *data;
 
-            auto len() -> const int64_t
+            auto len() const -> int64_t
             {
                 return umkaGetDynArrayLen(this);
             }
@@ -27,7 +27,7 @@ export namespace umkacxx::types
             /// directly from the VM after you are done copying its contents.
             /// Do NOT call this on nested arrays inside an outer array — Umka frees
             /// those automatically when the outer array is decreffed.
-            auto decref(const vm_handle vm) -> void
+            auto decref(const vm_handle vm) const -> void
             {
                 umkaDecRef(vm.get(), data);
             }
