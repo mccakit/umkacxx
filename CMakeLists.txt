@@ -22,7 +22,6 @@ endif()
 
 add_subdirectory(deps)
 add_subdirectory(src)
-add_subdirectory(apps)
 option(BUILD_TESTING "Build tests" OFF)
 if (BUILD_TESTING)
     include(CTest)
