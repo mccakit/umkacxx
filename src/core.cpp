@@ -61,14 +61,16 @@ export namespace umkacxx
 
             /// Constructs and runs the VM from the given Umka script path.
             /// Terminates on compile or runtime error.
-            umka(const std::filesystem::path &main_script, std::initializer_list<types::module_t> modules = {})
+            umka(const std::filesystem::path &main_script, std::size_t stack_size, std::initializer_list<types::module_t> modules = {})
                 : vm{umkaAlloc(), umkaFree}
             {
-                umkaInit(vm.get(), main_script.c_str(), nullptr, 4096, nullptr, 0, nullptr, true, true, nullptr);
+                umkaInit(vm.get(), main_script.c_str(), nullptr, stack_size, nullptr, 0, nullptr, true, true, nullptr);
                 for (auto &mod : modules)
                 {
                     for (auto &fn : mod.funcs)
+                    {
                         umkaAddFunc(vm.get(), fn.name.c_str(), fn.fn);
+                    }
                     umkaAddModule(vm.get(), mod.name.c_str(), mod.src.c_str());
                 }
                 if (!umkaCompile(vm.get()))

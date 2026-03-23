@@ -5,7 +5,7 @@ import boost.ut;
 int main()
 {
     using namespace boost::ut;
-    umkacxx::umka umka{"./test.um"};
+    umkacxx::umka umka{"./test.um", 4096};
 
     "str return"_test = [&umka] {
         std::string msg{umka.call<umkacxx::types::str_t>("get_str")};
