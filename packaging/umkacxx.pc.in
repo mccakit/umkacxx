@@ -4,5 +4,6 @@ libdir=${prefix}/lib
 Name: umkacxx
 Version: @PROJECT_VERSION@
 Description: @PROJECT_DESCRIPTION@
+Requires: umka
 Libs: -L${libdir} -lumkacxx
 Cflags: -fprebuilt-module-path=${libdir}/cxx/bmi
