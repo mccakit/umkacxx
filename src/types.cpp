@@ -62,4 +62,5 @@ export namespace umkacxx::types
             {
             }
     };
+    using slot_t = std::variant<int64_t, uint64_t, void*, double, float, const char*>;
 } // namespace umkacxx::types

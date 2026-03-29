@@ -1,0 +1,45 @@
+var value*: int = 0
+var name*: str = ""
+var score*: real = 0.0
+var active*: bool = false
+var offset*: int = 0
+
+type point* = struct {
+    x: int
+    y: int
+}
+
+var pt*: point = point{}
+
+fn setValue*(v: int) {
+    value = v
+}
+fn setName*(n: str) {
+    name = n
+}
+fn setScore*(s: real) {
+    score = s
+}
+fn setActive*(a: bool) {
+    active = a
+}
+fn setValueAndOffset*(v: int, o: int) {
+    value = v
+    offset = o
+}
+fn getSum*(): int {
+    return value + offset
+}
+fn setPoint*(x: int, y: int) {
+    pt.x = x
+    pt.y = y
+}
+fn getPointX*(): int {
+    return pt.x
+}
+fn getPointY*(): int {
+    return pt.y
+}
+fn getPointSum*(): int {
+    return pt.x + pt.y
+}

@@ -1,4 +1,6 @@
 module;
+#include <initializer_list>
+#include <string>
 #include <umka_api.h>
 export module umkacxx:core;
 import std;
@@ -61,7 +63,9 @@ export namespace umkacxx
 
             /// Constructs and runs the VM from the given Umka script path.
             /// Terminates on compile or runtime error.
-            umka(const std::filesystem::path &main_script, std::size_t stack_size, std::initializer_list<types::module_t> modules = {})
+            umka(const std::filesystem::path &main_script,
+                 std::size_t stack_size,
+                 std::initializer_list<types::module_t> modules = {})
                 : vm{umkaAlloc(), umkaFree}
             {
                 umkaInit(vm.get(), main_script.c_str(), nullptr, stack_size, nullptr, 0, nullptr, true, true, nullptr);
@@ -84,11 +88,66 @@ export namespace umkacxx
                     std::terminate();
                 }
             }
-            template <typename T> auto call(std::string_view func_name) const -> T
+            auto make_str(const char *s) const -> const char *
+            {
+                return umkaMakeStr(vm.get(), s);
+            }
+            template <typename T>
+            auto call(std::string_view func_name,
+                      std::string_view module_name = {},
+                      std::initializer_list<types::slot_t> params = {}) const -> T
             {
                 UmkaFuncContext fn{};
-                umkaGetFunc(vm.get(), nullptr, func_name.data(), &fn);
-                if constexpr (std::is_arithmetic_v<T> || std::is_pointer_v<T>)
+                if (!umkaGetFunc(vm.get(), module_name.empty() ? nullptr : module_name.data(), func_name.data(), &fn))
+                {
+                    std::println("Error: Could not find function '{}' in module '{}'", func_name, module_name);
+                    std::terminate();
+                }
+
+                int i = 0;
+                for (auto const &p : params)
+                {
+                    UmkaStackSlot *slot = umkaGetParam(fn.params, i++);
+                    if (!slot)
+                    {
+                        break;
+                    }
+                    std::visit(
+                        [slot](auto &&val) {
+                            using V = std::decay_t<decltype(val)>;
+                            if constexpr (std::is_same_v<V, int64_t>)
+                            {
+                                slot->intVal = val;
+                            }
+                            else if constexpr (std::is_same_v<V, uint64_t>)
+                            {
+                                slot->uintVal = val;
+                            }
+                            else if constexpr (std::is_same_v<V, void *>)
+                            {
+                                slot->ptrVal = val;
+                            }
+                            else if constexpr (std::is_same_v<V, double>)
+                            {
+                                slot->realVal = val;
+                            }
+                            else if constexpr (std::is_same_v<V, float>)
+                            {
+                                slot->real32Val = val;
+                            }
+                            else if constexpr (std::is_same_v<V, const char *>)
+                            {
+                                slot->ptrVal = const_cast<char *>(val);
+                            }
+                        },
+                        p);
+                }
+
+                if constexpr (std::is_void_v<T>)
+                {
+                    umkaCall(vm.get(), &fn);
+                }
+                else if constexpr (std::is_arithmetic_v<T> || std::is_pointer_v<T>)
                 {
                     UmkaStackSlot result_slot{};
                     fn.result = &result_slot;
