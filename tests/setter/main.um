@@ -24,3 +24,9 @@ fn runPointY*(): int {
 fn runPointSum*(): int {
     return mod::getPointSum()
 }
+fn runInnerAt*(i: int): int {
+    return mod::getInnerAt(i)
+}
+fn runOuterAt*(i: int): int {
+    return mod::getOuterAt(i)
+}

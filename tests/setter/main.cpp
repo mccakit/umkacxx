@@ -117,4 +117,24 @@ int main()
         expect(x == 10_i);
         expect(y == 20_i);
     };
+
+    "set and get complex struct"_test = [&umka]
+    {
+        umka.call<void>("setInner", "mod.um",
+            {umkacxx::types::int_t(1), umkacxx::types::int_t(2), umkacxx::types::int_t(3)});
+        umka.call<void>("setOuter", "mod.um",
+            {umkacxx::types::int_t(10), umkacxx::types::int_t(20), umkacxx::types::int_t(30)});
+        int i0 = static_cast<int>(umka.call<umkacxx::types::int_t>("runInnerAt", "./main.um", {umkacxx::types::int_t(0)}));
+        int i1 = static_cast<int>(umka.call<umkacxx::types::int_t>("runInnerAt", "./main.um", {umkacxx::types::int_t(1)}));
+        int i2 = static_cast<int>(umka.call<umkacxx::types::int_t>("runInnerAt", "./main.um", {umkacxx::types::int_t(2)}));
+        int o0 = static_cast<int>(umka.call<umkacxx::types::int_t>("runOuterAt", "./main.um", {umkacxx::types::int_t(0)}));
+        int o1 = static_cast<int>(umka.call<umkacxx::types::int_t>("runOuterAt", "./main.um", {umkacxx::types::int_t(1)}));
+        int o2 = static_cast<int>(umka.call<umkacxx::types::int_t>("runOuterAt", "./main.um", {umkacxx::types::int_t(2)}));
+        expect(i0 == 1_i);
+        expect(i1 == 2_i);
+        expect(i2 == 3_i);
+        expect(o0 == 10_i);
+        expect(o1 == 20_i);
+        expect(o2 == 30_i);
+    };
 }

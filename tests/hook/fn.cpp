@@ -10,7 +10,7 @@ void umka_add(umkacxx::types::umka_slot *params, umkacxx::types::umka_slot *resu
 }
 
 constexpr char src[] = {
-#embed "cppfuncs.um"
+#embed "fn_wrap.um"
     , 0};
 
-export umkacxx::types::module_t cppfuncs{"cppfuncs.um", src, {{"add", umka_add}}};
+export umkacxx::types::module_t cppfuncs{"fn_wrap.um", src, {{"add", umka_add}}};

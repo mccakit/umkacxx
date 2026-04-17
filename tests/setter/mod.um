@@ -11,6 +11,17 @@ type point* = struct {
 
 var pt*: point = point{}
 
+type inner* = struct {
+    arr: [3]int
+}
+
+type outer* = struct {
+    inner: inner
+    arr: [3]int
+}
+
+var o*: outer = outer{}
+
 fn setValue*(v: int) {
     value = v
 }
@@ -42,4 +53,20 @@ fn getPointY*(): int {
 }
 fn getPointSum*(): int {
     return pt.x + pt.y
+}
+fn setInner*(a: int, b: int, c: int) {
+    o.inner.arr[0] = a
+    o.inner.arr[1] = b
+    o.inner.arr[2] = c
+}
+fn setOuter*(a: int, b: int, c: int) {
+    o.arr[0] = a
+    o.arr[1] = b
+    o.arr[2] = c
+}
+fn getInnerAt*(i: int): int {
+    return o.inner.arr[i]
+}
+fn getOuterAt*(i: int): int {
+    return o.arr[i]
 }
