@@ -1,0 +1,5 @@
+import "fn_wrap.um"
+
+fn run*(): int {
+    return fn_wrap::add(1, 2)
+}

@@ -1,0 +1,32 @@
+import "mod.um"
+
+fn run*(): int {
+    return mod::value
+}
+fn runName*(): str {
+    return mod::name
+}
+fn runScore*(): real {
+    return mod::score
+}
+fn runActive*(): bool {
+    return mod::active
+}
+fn runSum*(): int {
+    return mod::getSum()
+}
+fn runPointX*(): int {
+    return mod::getPointX()
+}
+fn runPointY*(): int {
+    return mod::getPointY()
+}
+fn runPointSum*(): int {
+    return mod::getPointSum()
+}
+fn runInnerAt*(i: int): int {
+    return mod::getInnerAt(i)
+}
+fn runOuterAt*(i: int): int {
+    return mod::getOuterAt(i)
+}
