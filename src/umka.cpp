@@ -128,7 +128,7 @@ export namespace umka
     class umka
     {
         public:
-            umka(std::filesystem::path script, std::size_t stack_size, std::initializer_list<module_t> modules = {})
+            umka(std::filesystem::path script, int stack_size, std::initializer_list<module_t> modules = {})
             {
                 interpreter = umkaAlloc();
                 umkaInit(interpreter,
