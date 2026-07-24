@@ -1,1 +1,5 @@
 fn add*(a, b: int): int
+fn concat*(a, b: str): str
+fn mul_real*(a, b: real): real
+fn sum_arr*(arr: [3]int): int
+fn sum_dyn_arr*(arr: []int): int

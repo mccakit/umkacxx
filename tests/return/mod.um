@@ -1,3 +1,34 @@
+// Type Declarations
+
+type Color = enum {
+    red
+    green
+    blue
+}
+
+type primitive_struct = struct {
+    name: str
+    age: int
+}
+
+type complex_struct = struct {
+    name: str
+    tags: []str
+    values: []int
+}
+
+type inner_struct = struct {
+    name: str
+    values: []int
+}
+
+type nested_struct = struct {
+    id: int
+    items: inner_struct
+}
+
+// Primitives
+
 fn get_str(): str {
     return "Hello, World!"
 }
@@ -18,6 +49,24 @@ fn get_char(): char {
     return 'a'
 }
 
+fn get_uint(): uint {
+    return uint(42)
+}
+
+fn get_real32(): real32 {
+    return real32(3.14)
+}
+
+fn get_enum(): Color {
+    return Color.green
+}
+
+// Array & Vector Return
+
+fn get_fixed_arr(): [5]int {
+    return [5]int{10, 20, 30, 40, 50}
+}
+
 fn get_int_arr(): []int {
     return []int{1, 2, 3, 4, 5}
 }
@@ -26,37 +75,66 @@ fn get_str_arr(): []str {
     return []str{"Hello", "World", "Umka"}
 }
 
-type basic_struct = struct {
-    name: str
-    age: int
-}
+// Struct Return
 
-fn get_basic_struct(): basic_struct {
-    return basic_struct{name: "Umka", age: 42}
-}
-
-type complex_struct = struct {
-    name: str
-    tags: []str
-    values: []int
+fn get_primitive_struct(): primitive_struct {
+    return primitive_struct{"Umka", 42}
 }
 
 fn get_complex_struct(): complex_struct {
     return complex_struct{
-        name: "Umka",
-        tags: []str{"foo", "bar", "baz"},
-        values: []int{1, 2, 3, 4, 5}
+        "Umka",
+        []str{"foo", "bar", "baz"},
+        []int{1, 2, 3, 4, 5}
     }
 }
 
-type inner_struct = struct {
-    name: str
-    values: []int
-}
-
-fn get_nested(): []inner_struct {
+fn get_struct_arr(): []inner_struct {
     return []inner_struct{
-        inner_struct{name: "foo", values: []int{1, 2, 3}},
-        inner_struct{name: "bar", values: []int{4, 5, 6}}
+        inner_struct{"foo", []int{1, 2, 3}},
+        inner_struct{"bar", []int{4, 5, 6}}
     }
+}
+
+fn get_nested_struct(): nested_struct {
+    return nested_struct{
+        42,
+        inner_struct{
+            "foo",
+            []int{1, 2, 3}
+        }
+    }
+}
+
+fn get_nested_struct_arr(): []nested_struct {
+    return []nested_struct{
+        nested_struct{
+            42,
+            inner_struct{
+                "foo",
+                []int{1, 2, 3}
+            }
+        },
+        nested_struct{
+            43,
+            inner_struct{
+                "bar",
+                []int{4, 5, 6}
+            }
+        }
+    }
+}
+
+// Pointer Return
+
+fn get_int_ptr(): ^int {
+    p := new(int)
+    p^ = 100
+    return p
+}
+
+fn get_struct_ptr(): ^primitive_struct {
+    p := new(primitive_struct)
+    p^ = primitive_struct{"Heap", 10}
+    return p
 }

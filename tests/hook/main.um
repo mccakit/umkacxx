@@ -1,5 +1,23 @@
 import "fn_wrap.um"
 
-fn run*(): int {
-    return fn_wrap::add(1, 2)
+fn run_add*(): int {
+    return fn_wrap::add(10, 20)
+}
+
+fn run_concat*(): str {
+    return fn_wrap::concat("Hello, ", "Umka!")
+}
+
+fn run_mul*(): real {
+    return fn_wrap::mul_real(2.5, 4.0)
+}
+
+fn run_sum*(): int {
+    arr := [3]int{10, 20, 30}
+    return fn_wrap::sum_arr(arr)
+}
+
+fn run_dyn_sum*(): int {
+    arr := []int{10, 20, 30, 40}
+    return fn_wrap::sum_dyn_arr(arr)
 }

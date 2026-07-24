@@ -7,5 +7,6 @@ Checks: >
     readability-*,
     portability-*,
     performance-*,
-    misc-*
+    misc-*,
+    -misc-non-private-member-variables-in-classes
 WarningsAsErrors: ""
