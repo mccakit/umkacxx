@@ -1,6 +1,4 @@
 find_package(ut REQUIRED)
-find_package(umka REQUIRED)
-
 set_target_properties(ut::library PROPERTIES CXX_MODULE_STD ON)
 
 add_executable(return_test)
@@ -25,7 +23,7 @@ target_sources(
 hooks
     PUBLIC
     FILE_SET CXX_MODULES FILES ${CMAKE_CURRENT_SOURCE_DIR}/hook/fn.cpp)
-target_link_libraries(hooks PRIVATE umkacxx_library umka::library)
+target_link_libraries(hooks PRIVATE umkacxx_library)
 
 add_executable(hooktest)
 target_sources(hooktest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/hook/main.cpp)
@@ -40,18 +38,3 @@ add_custom_command(TARGET hooktest POST_BUILD
 )
 add_test(NAME hooktest COMMAND hooktest WORKING_DIRECTORY
 $<TARGET_FILE_DIR:hooktest>)
-
-# add_executable(setter_test)
-# target_sources(setter_test PRIVATE
-# ${CMAKE_CURRENT_SOURCE_DIR}/setter/main.cpp)
-# target_link_libraries(setter_test PRIVATE umkacxx_library ut::library)
-# set_target_properties(setter_test PROPERTIES
-#     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/setter
-# )
-# add_custom_command(TARGET setter_test POST_BUILD
-#     COMMAND ${CMAKE_COMMAND} -E copy
-#         ${CMAKE_CURRENT_SOURCE_DIR}/setter/main.um
-#         $<TARGET_FILE_DIR:setter_test>/main.um
-# )
-# add_test(NAME setter_test COMMAND setter_test WORKING_DIRECTORY
-# $<TARGET_FILE_DIR:setter_test>)
