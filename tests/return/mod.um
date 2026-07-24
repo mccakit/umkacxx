@@ -14,6 +14,10 @@ fn get_bool(): bool {
     return true
 }
 
+fn get_char(): char {
+    return 'a'
+}
+
 fn get_int_arr(): []int {
     return []int{1, 2, 3, 4, 5}
 }

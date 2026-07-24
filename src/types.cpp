@@ -39,6 +39,7 @@ export namespace umkacxx::types
     using uint_t = std::uint64_t;
     using real_t = double;
     using bool_t = bool;
+    using char_t = char;
 
     /// Mirrors Umka's internal stack slot layout.
     using umka_slot = UmkaStackSlot;

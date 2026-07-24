@@ -27,6 +27,11 @@ int main()
         expect(val == true);
     };
 
+    "char return"_test = [&umka] {
+        char val{static_cast<char>(umka.call<umkacxx::types::char_t>("get_char"))};
+        expect(val == 'a');
+    };
+
     struct umka_intarr_cxx
     {
         public:
