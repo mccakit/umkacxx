@@ -138,3 +138,126 @@ fn get_struct_ptr(): ^primitive_struct {
     p^ = primitive_struct{"Heap", 10}
     return p
 }
+
+// Scalar Parameters
+
+fn add(a, b: int): int {
+    return a + b
+}
+
+fn div_real(a, b: real): real {
+    return a / b
+}
+
+fn scale32(x, k: real32): real32 {
+    return x * k
+}
+
+fn negate(b: bool): bool {
+    return !b
+}
+
+fn next_char(c: char, by: int): char {
+    return char(int(c) + by)
+}
+
+fn add_uint(a, b: uint): uint {
+    return a + b
+}
+
+fn color_name(c: Color): str {
+    switch c {
+        case Color.red:   return "red"
+        case Color.green: return "green"
+        case Color.blue:  return "blue"
+    }
+    return "unknown"
+}
+
+fn format_all(name: str, age: int, score: real, active: bool): str {
+    status := active ? "on" : "off"
+    return sprintf("%s|%d|%.2f|%s", name, age, score, status)
+}
+
+// String Parameters
+
+fn greet(name: str): str {
+    return "Hello, " + name + "!"
+}
+
+// Fails on anything that is not a real Umka string: the length is read from
+// the string's header, not by scanning for a null character.
+fn str_len(s: str): int {
+    return len(s)
+}
+
+// Array Parameters
+
+fn sum_int_arr(values: []int): int {
+    sum := 0
+    for i in values {
+        sum += values[i]
+    }
+    return sum
+}
+
+fn join_strs(parts: []str, sep: str): str {
+    out := ""
+    for i in parts {
+        if i > 0 {
+            out += sep
+        }
+        out += parts[i]
+    }
+    return out
+}
+
+fn sum_fixed_arr(values: [5]int): int {
+    sum := 0
+    for i in values {
+        sum += values[i]
+    }
+    return sum
+}
+
+// Struct Parameters
+
+fn describe(p: primitive_struct): str {
+    return sprintf("%s is %d", p.name, p.age)
+}
+
+fn age_by(p: primitive_struct, years: int): primitive_struct {
+    return primitive_struct{p.name, p.age + years}
+}
+
+fn count_tags(s: complex_struct): int {
+    return len(s.tags)
+}
+
+// Pointer Parameters
+
+fn inc_int_ptr(p: ^int, by: int) {
+    p^ += by
+}
+
+fn ptr_age(p: ^primitive_struct): int {
+    return p^.age
+}
+
+// Multiple Return Values
+
+fn make_pair(a, b: int): (int, int) {
+    return a, b
+}
+
+// Void Calls
+
+var total: int
+
+fn accumulate(x: int) {
+    total += x
+}
+
+fn get_total(): int {
+    return total
+}
