@@ -1,5 +1,39 @@
+// Declarations only - every body here lives in C++ and is bound with
+// umkaAddFunc before compilation.
+
+type Color* = enum {
+    red
+    green
+    blue
+}
+
+type point* = struct {
+    name: str
+    age: int
+}
+
+// scalars in, scalars out
 fn add*(a, b: int): int
 fn concat*(a, b: str): str
 fn mul_real*(a, b: real): real
+fn scale32*(x, k: real32): real32
+fn add_uint*(a, b: uint): uint
+fn negate*(b: bool): bool
+fn next_char*(c: char, by: int): char
+fn color_name*(c: Color): str
+
+// arrays in
 fn sum_arr*(arr: [3]int): int
 fn sum_dyn_arr*(arr: []int): int
+
+// arrays out - built with make_arr inside the extern function
+fn make_int_arr*(n: int): []int
+fn make_str_arr*(n: int): []str
+
+// structs
+fn describe*(p: point): str
+fn make_point*(name: str, age: int): point
+
+// pointers
+fn inc_ptr*(p: ^int, by: int)
+fn alloc_int*(v: int): ^int

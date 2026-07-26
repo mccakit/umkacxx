@@ -1,4 +1,7 @@
-// Type Declarations
+// Test surface for the umkacxx wrapper. Every function here is exercised from
+// tests/return/main.cpp.
+
+// ---------------------------------------------------------------- types
 
 type Color = enum {
     red
@@ -27,7 +30,7 @@ type nested_struct = struct {
     items: inner_struct
 }
 
-// Primitives
+// ------------------------------------------------------ scalar returns
 
 fn get_str(): str {
     return "Hello, World!"
@@ -61,7 +64,7 @@ fn get_enum(): Color {
     return Color.green
 }
 
-// Array & Vector Return
+// ------------------------------------------------------- array returns
 
 fn get_fixed_arr(): [5]int {
     return [5]int{10, 20, 30, 40, 50}
@@ -75,7 +78,7 @@ fn get_str_arr(): []str {
     return []str{"Hello", "World", "Umka"}
 }
 
-// Struct Return
+// ------------------------------------------------------ struct returns
 
 fn get_primitive_struct(): primitive_struct {
     return primitive_struct{"Umka", 42}
@@ -99,33 +102,18 @@ fn get_struct_arr(): []inner_struct {
 fn get_nested_struct(): nested_struct {
     return nested_struct{
         42,
-        inner_struct{
-            "foo",
-            []int{1, 2, 3}
-        }
+        inner_struct{"foo", []int{1, 2, 3}}
     }
 }
 
 fn get_nested_struct_arr(): []nested_struct {
     return []nested_struct{
-        nested_struct{
-            42,
-            inner_struct{
-                "foo",
-                []int{1, 2, 3}
-            }
-        },
-        nested_struct{
-            43,
-            inner_struct{
-                "bar",
-                []int{4, 5, 6}
-            }
-        }
+        nested_struct{42, inner_struct{"foo", []int{1, 2, 3}}},
+        nested_struct{43, inner_struct{"bar", []int{4, 5, 6}}}
     }
 }
 
-// Pointer Return
+// ----------------------------------------------------- pointer returns
 
 fn get_int_ptr(): ^int {
     p := new(int)
@@ -139,7 +127,7 @@ fn get_struct_ptr(): ^primitive_struct {
     return p
 }
 
-// Scalar Parameters
+// --------------------------------------------------- scalar parameters
 
 fn add(a, b: int): int {
     return a + b
@@ -179,7 +167,7 @@ fn format_all(name: str, age: int, score: real, active: bool): str {
     return sprintf("%s|%d|%.2f|%s", name, age, score, status)
 }
 
-// String Parameters
+// --------------------------------------------------- string parameters
 
 fn greet(name: str): str {
     return "Hello, " + name + "!"
@@ -191,7 +179,7 @@ fn str_len(s: str): int {
     return len(s)
 }
 
-// Array Parameters
+// ---------------------------------------------------- array parameters
 
 fn sum_int_arr(values: []int): int {
     sum := 0
@@ -220,7 +208,7 @@ fn sum_fixed_arr(values: [5]int): int {
     return sum
 }
 
-// Struct Parameters
+// --------------------------------------------------- struct parameters
 
 fn describe(p: primitive_struct): str {
     return sprintf("%s is %d", p.name, p.age)
@@ -234,7 +222,7 @@ fn count_tags(s: complex_struct): int {
     return len(s.tags)
 }
 
-// Pointer Parameters
+// -------------------------------------------------- pointer parameters
 
 fn inc_int_ptr(p: ^int, by: int) {
     p^ += by
@@ -244,13 +232,11 @@ fn ptr_age(p: ^primitive_struct): int {
     return p^.age
 }
 
-// Multiple Return Values
+// --------------------------------------- multiple results, void calls
 
 fn make_pair(a, b: int): (int, int) {
     return a, b
 }
-
-// Void Calls
 
 var total: int
 

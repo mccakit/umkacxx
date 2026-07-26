@@ -1,5 +1,8 @@
 import "fn_wrap.um"
 
+// Each wrapper calls one extern function so the C++ side can assert on the
+// value that came back through the VM.
+
 fn run_add*(): int {
     return fn_wrap::add(10, 20)
 }
@@ -12,6 +15,26 @@ fn run_mul*(): real {
     return fn_wrap::mul_real(2.5, 4.0)
 }
 
+fn run_scale32*(): real32 {
+    return fn_wrap::scale32(real32(2.5), real32(4.0))
+}
+
+fn run_add_uint*(): uint {
+    return fn_wrap::add_uint(uint(40), uint(2))
+}
+
+fn run_negate*(): bool {
+    return fn_wrap::negate(true)
+}
+
+fn run_next_char*(): char {
+    return fn_wrap::next_char('a', 1)
+}
+
+fn run_color_name*(): str {
+    return fn_wrap::color_name(fn_wrap::Color.blue)
+}
+
 fn run_sum*(): int {
     arr := [3]int{10, 20, 30}
     return fn_wrap::sum_arr(arr)
@@ -20,4 +43,60 @@ fn run_sum*(): int {
 fn run_dyn_sum*(): int {
     arr := []int{10, 20, 30, 40}
     return fn_wrap::sum_dyn_arr(arr)
+}
+
+// The array is built in C++ and handed back.
+fn run_make_int_arr*(): []int {
+    return fn_wrap::make_int_arr(4)
+}
+
+// Summed inside Umka, so the VM has to accept it as a real dynamic array.
+fn run_make_int_arr_sum*(): int {
+    values := fn_wrap::make_int_arr(4)
+    sum := 0
+    for i in values {
+        sum += values[i]
+    }
+    return sum
+}
+
+fn run_make_str_arr*(): []str {
+    return fn_wrap::make_str_arr(3)
+}
+
+// len() reads the string header, so this fails unless make_str produced a real
+// Umka string rather than a bare pointer.
+fn run_make_str_arr_lens*(): int {
+    parts := fn_wrap::make_str_arr(3)
+    total := 0
+    for i in parts {
+        total += len(parts[i])
+    }
+    return total
+}
+
+fn run_describe*(): str {
+    p := fn_wrap::point{"Umka", 42}
+    return fn_wrap::describe(p)
+}
+
+fn run_make_point*(): fn_wrap::point {
+    return fn_wrap::make_point("Umka", 42)
+}
+
+fn run_make_point_name_len*(): int {
+    p := fn_wrap::make_point("Umka", 42)
+    return len(p.name)
+}
+
+fn run_inc_ptr*(): int {
+    p := new(int)
+    p^ = 100
+    fn_wrap::inc_ptr(p, 5)
+    return p^
+}
+
+fn run_alloc_int*(): int {
+    p := fn_wrap::alloc_int(77)
+    return p^
 }
