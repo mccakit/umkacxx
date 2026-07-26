@@ -1,5 +1,7 @@
 # umkacxx
 
+[API Reference](https://mccakit.github.io/umkacxx/) | [User Manual](https://github.com/mccakit/umkacxx/blob/main/docs/user_manual.md)
+
 Umkacxx is a C++ library that provides a C++ module interface for the [umka](https://github.com/umka-lang/umka), a statically typed, interpreted scripting language.
 
 Project is built using CMake and packaged via CPS. CMake 4.4 and later is required, ninja is recommended for building.
@@ -22,5 +24,5 @@ cmake --build build
 
 ```cmake
 find_package(umkacxx)
-target_link_libraries($PROJECT PRIVATE umkacxx::library)
+target_link_libraries(${PROJECT} PRIVATE umkacxx::cxx_module)
 ```
