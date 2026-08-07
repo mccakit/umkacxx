@@ -368,6 +368,22 @@ export namespace umka
         return umkaGetResultType(params, result);
     }
 
+    [[nodiscard]] auto field_type(type_t type, const char *name) -> type_t
+    {
+        if (!type) { fail("cannot look up a field on a null type"); }
+        type_t field = umkaGetFieldType(type, name);
+        if (!field) { fail(std::format("no field '{}' on this Umka type", name)); }
+        return field;
+    }
+
+    [[nodiscard]] auto base_type(type_t type) -> type_t
+    {
+        if (!type) { fail("cannot take the base of a null type"); }
+        type_t base = umkaGetBaseType(type);
+        if (!base) { fail("type has no base; expected a pointer or array"); }
+        return base;
+    }
+
     /**
      * @brief Build a reference-counted Umka string.
      * @param interpreter The interpreter that will own the string.
